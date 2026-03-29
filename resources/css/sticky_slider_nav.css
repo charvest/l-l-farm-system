@@ -1,0 +1,90 @@
+/* File: resources/css/sticky_slider_nav.css */
+.et-nav-wrapper {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: #fff;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.08);
+}
+
+.et-nav {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    height: 70px;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+    gap: 1rem;
+}
+
+.et-nav-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+    color: #0f172a;
+    font-weight: 700;
+    letter-spacing: 0.02rem;
+    white-space: nowrap;
+}
+
+.et-nav-brand-icon {
+    font-size: 1.1rem;
+}
+
+.et-nav-tabs {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+    justify-content: flex-end;
+    gap: 0;
+    height: 70px;
+    overflow-x: auto;
+}
+
+.et-nav-tab {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 1rem;
+    height: 70px;
+    color: #111827;
+    text-decoration: none;
+    letter-spacing: 0.08rem;
+    font-size: 0.85rem;
+    transition:
+        background 200ms ease,
+        color 200ms ease;
+    white-space: nowrap;
+}
+
+.et-nav-tab:hover,
+.et-nav-tab:focus-visible {
+    color: #ffffff;
+    background: rgba(34, 197, 94, 0.85);
+    outline: none;
+}
+
+.et-nav-tab.is-active {
+    color: #14532d;
+    font-weight: 700;
+}
+
+.et-nav-tab-slider {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 6px;
+    background: #22c55e;
+    transition:
+        left 220ms ease,
+        width 220ms ease;
+}
+
+@media (min-width: 800px) {
+    .et-nav-tab {
+        font-size: 0.95rem;
+    }
+}
