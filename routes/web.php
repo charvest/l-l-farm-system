@@ -1,16 +1,17 @@
 <?php
 
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SocialAuthController;
+use App\Http\Middleware\RequireLoginForCartAction;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Support\Facades\Route;
- 
-use App\Http\Controllers\CheckoutController;
- 
-use App\Http\Controllers\SocialAuthController;
+
+use App\Http\Controllers\Admin\AdminAuthController;
 
 Route::get('/oauth/{provider}/redirect', [SocialAuthController::class, 'redirect'])
     ->whereIn('provider', ['google', 'facebook'])
@@ -20,55 +21,27 @@ Route::get('/oauth/{provider}/callback', [SocialAuthController::class, 'callback
     ->whereIn('provider', ['google', 'facebook'])
     ->name('oauth.callback');
 
-// Cart viewing can be auth-only (your choice). If you want guest cart page, remove middleware('auth') here.
-Route::get('/cart', [CartController::class, 'index'])->middleware('auth')->name('cart.index');
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::middleware('guest:admin')->group(function () {
+        Route::get('/login', [AdminAuthController::class, 'create'])->name('login');
+        Route::post('/login', [AdminAuthController::class, 'store'])->name('login.store');
+    });
 
-Route::post('/cart/add/{product}', [CartController::class, 'add'])
-    ->middleware(RequireLoginForCartAction::class)
-    ->name('cart.add');
-
-Route::post('/cart/update/{product}', [CartController::class, 'update'])
-    ->middleware(RequireLoginForCartAction::class)
-    ->name('cart.update');
-
-Route::post('/cart/remove/{product}', [CartController::class, 'remove'])
-    ->middleware(RequireLoginForCartAction::class)
-    ->name('cart.remove');
-
-Route::post('/cart/clear', [CartController::class, 'clear'])
-    ->middleware(RequireLoginForCartAction::class)
-    ->name('cart.clear');
-
-// Checkout must be logged in
-Route::middleware('auth')->group(function () {
-    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
-    Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
-    Route::get('/checkout/success/{order}', [CheckoutController::class, 'success'])->name('checkout.success');
+    Route::middleware('auth:admin')->group(function () {
+        Route::post('/logout', [AdminAuthController::class, 'destroy'])->name('logout');
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    });
 });
 
-// Social login (Google/Facebook)
-Route::get('/oauth/{provider}/redirect', [SocialAuthController::class, 'redirect'])
-    ->whereIn('provider', ['google', 'facebook'])
-    ->name('oauth.redirect');
-
-Route::get('/oauth/{provider}/callback', [SocialAuthController::class, 'callback'])
-    ->whereIn('provider', ['google', 'facebook'])
-    ->name('oauth.callback');
-
-
-
 Route::get('/', function () {
-    // Base featured query (exclude broiler)
     $featuredProducts = Product::query()
         ->whereNot(function ($q) {
-            $q->where('type', 'Broiler')
-              ->orWhere('name', 'like', '%Broiler%');
+            $q->where('type', 'Broiler')->orWhere('name', 'like', '%Broiler%');
         })
         ->orderByDesc('created_at')
         ->take(8)
         ->get();
 
-    // Force include carrots if it exists (optional)
     $carrots = Product::query()
         ->where('name', 'like', '%carrot%')
         ->orWhere('type', 'like', '%carrot%')
@@ -104,20 +77,34 @@ Route::get('/products', [ProductController::class, 'index'])->name('products.ind
 Route::get('/products/{product}', [ProductController::class, 'show'])->name('products.show');
 
 Route::prefix('cart')->name('cart.')->group(function () {
-    Route::get('/', [CartController::class, 'index'])->name('index');
-    Route::post('/add/{product}', [CartController::class, 'add'])->name('add');
-    Route::post('/remove/{product}', [CartController::class, 'remove'])->name('remove');
-    Route::post('/clear', [CartController::class, 'clear'])->name('clear');
-});
+    Route::get('/', [CartController::class, 'index'])->middleware('auth')->name('index');
 
-Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    Route::post('/add/{product}', [CartController::class, 'add'])
+        ->middleware(RequireLoginForCartAction::class)
+        ->name('add');
+
+    Route::post('/update/{product}', [CartController::class, 'update'])
+        ->middleware(RequireLoginForCartAction::class)
+        ->name('update');
+
+    Route::post('/remove/{product}', [CartController::class, 'remove'])
+        ->middleware(RequireLoginForCartAction::class)
+        ->name('remove');
+
+    Route::post('/clear', [CartController::class, 'clear'])
+        ->middleware(RequireLoginForCartAction::class)
+        ->name('clear');
 });
 
 Route::middleware('auth')->group(function () {
+    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
+    Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+    Route::get('/checkout/success/{order}', [CheckoutController::class, 'success'])->name('checkout.success');
+
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
 require __DIR__ . '/auth.php';
+

@@ -1,6 +1,3 @@
-{{-- =============================================================================
-File: resources/views/auth/register.blade.php
-============================================================================= --}}
 <x-guest-layout>
     <div class="w-full max-w-5xl overflow-hidden rounded-3xl bg-white shadow-xl ring-1 ring-black/5">
         <div class="grid md:grid-cols-2">
@@ -39,7 +36,6 @@ File: resources/views/auth/register.blade.php
             <section class="px-8 py-12 md:px-12 md:py-14">
                 <div class="flex items-center gap-3">
                     <span class="inline-flex h-10 w-10 items-center justify-center rounded-full bg-green-700 text-white">
-                        {{-- user-plus icon --}}
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
                             <circle cx="9" cy="7" r="4"/>
@@ -52,6 +48,9 @@ File: resources/views/auth/register.blade.php
 
                 <h2 class="mt-6 text-3xl font-extrabold text-gray-900">Create Account</h2>
                 <p class="mt-1 text-sm text-gray-500">Sign up to start ordering and reserving.</p>
+
+                <x-auth-session-status class="mt-6" :status="session('status')" />
+                <x-input-error class="mt-4" :messages="$errors->get('oauth')" />
 
                 <form class="mt-6 space-y-4" method="POST" action="{{ route('register') }}">
                     @csrf
@@ -118,32 +117,29 @@ File: resources/views/auth/register.blade.php
                         {{ __('Create account') }}
                     </button>
 
-                    {{-- Separator --}}
                     <div class="flex items-center gap-4 py-2">
                         <div class="h-px flex-1 bg-gray-200"></div>
                         <div class="text-xs text-gray-400">Or Sign Up With</div>
                         <div class="h-px flex-1 bg-gray-200"></div>
                     </div>
 
-                    {{-- Social placeholders (UI only) --}}
                     <div class="grid grid-cols-2 gap-3">
-                      {{-- GOOGLE --}}
-        <a
-            href="{{ route('oauth.redirect', ['provider' => 'google']) }}"
-            class="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-extrabold text-gray-800 shadow-sm hover:bg-gray-50 transition"
-        >
-            <span class="font-extrabold">G</span>
-            <span>Google</span>
-        </a>
+                        <a
+                            href="{{ route('oauth.redirect', ['provider' => 'google']) }}"
+                            class="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-extrabold text-gray-800 shadow-sm hover:bg-gray-50 transition"
+                        >
+                            <span class="font-extrabold">G</span>
+                            <span>Google</span>
+                        </a>
 
-        {{-- FACEBOOK --}}
-        <a
-            href="{{ route('oauth.redirect', ['provider' => 'facebook']) }}"
-            class="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-extrabold text-gray-800 shadow-sm hover:bg-gray-50 transition"
-        >
-            <span class="font-extrabold">f</span>
-            <span>Facebook</span>
-        </a>
+                        <a
+                            href="{{ route('oauth.redirect', ['provider' => 'facebook']) }}"
+                            class="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-extrabold text-gray-800 shadow-sm hover:bg-gray-50 transition"
+                        >
+                            <span class="font-extrabold">f</span>
+                            <span>Facebook</span>
+                        </a>
+                    </div>
 
                     <p class="pt-2 text-center text-sm text-gray-600">
                         Already have an account?

@@ -14,7 +14,6 @@
                     </p>
                 </div>
 
-                {{-- Simple “illustration” (no external assets required) --}}
                 <div class="mt-10 flex items-end justify-start gap-6">
                     <div class="rounded-2xl bg-white/15 p-5 backdrop-blur">
                         <div class="text-5xl leading-none">🐷</div>
@@ -52,6 +51,7 @@
                 <p class="mt-1 text-sm text-gray-500">Please login to your account</p>
 
                 <x-auth-session-status class="mt-6" :status="session('status')" />
+                <x-input-error class="mt-4" :messages="$errors->get('oauth')" />
 
                 <form class="mt-6 space-y-4" method="POST" action="{{ route('login') }}">
                     @csrf
@@ -109,34 +109,31 @@
                         {{ __('Login') }}
                     </button>
 
-                    {{-- Separator --}}
-                   <div class="mt-6">
-    <div class="flex items-center gap-3">
-        <div class="h-px flex-1 bg-gray-200"></div>
-        <div class="text-xs font-semibold text-gray-500">Or Login With</div>
-        <div class="h-px flex-1 bg-gray-200"></div>
-    </div>
+                    <div class="mt-6">
+                        <div class="flex items-center gap-3">
+                            <div class="h-px flex-1 bg-gray-200"></div>
+                            <div class="text-xs font-semibold text-gray-500">Or Login With</div>
+                            <div class="h-px flex-1 bg-gray-200"></div>
+                        </div>
 
-    <div class="mt-4 grid grid-cols-2 gap-3">
-        {{-- GOOGLE --}}
-        <a
-            href="{{ route('oauth.redirect', ['provider' => 'google']) }}"
-            class="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-extrabold text-gray-800 shadow-sm hover:bg-gray-50 transition"
-        >
-            <span class="font-extrabold">G</span>
-            <span>Google</span>
-        </a>
+                        <div class="mt-4 grid grid-cols-2 gap-3">
+                            <a
+                                href="{{ route('oauth.redirect', ['provider' => 'google']) }}"
+                                class="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-extrabold text-gray-800 shadow-sm hover:bg-gray-50 transition"
+                            >
+                                <span class="font-extrabold">G</span>
+                                <span>Google</span>
+                            </a>
 
-        {{-- FACEBOOK --}}
-        <a
-            href="{{ route('oauth.redirect', ['provider' => 'facebook']) }}"
-            class="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-extrabold text-gray-800 shadow-sm hover:bg-gray-50 transition"
-        >
-            <span class="font-extrabold">f</span>
-            <span>Facebook</span>
-        </a>
-    </div>
-</div>
+                            <a
+                                href="{{ route('oauth.redirect', ['provider' => 'facebook']) }}"
+                                class="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-extrabold text-gray-800 shadow-sm hover:bg-gray-50 transition"
+                            >
+                                <span class="font-extrabold">f</span>
+                                <span>Facebook</span>
+                            </a>
+                        </div>
+                    </div>
 
                     <p class="pt-2 text-center text-sm text-gray-600">
                         Don’t have an account?

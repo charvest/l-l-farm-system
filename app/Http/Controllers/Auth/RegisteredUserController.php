@@ -41,7 +41,7 @@ final class RegisteredUserController extends Controller
 
         $this->consumePendingCart();
 
-        return redirect()->intended(route('home'));
+       return redirect(route('home', absolute: false));
     }
 
     private function normalizeIntendedUrl(): void

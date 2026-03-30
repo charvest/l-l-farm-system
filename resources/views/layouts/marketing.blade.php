@@ -27,12 +27,12 @@
                 <li class="nav-item"><a class="nav-link" href="{{ route('home') }}">Home</a></li>
                 <li class="nav-item"><a class="nav-link" href="{{ route('products.index') }}">Products</a></li>
                 <li class="nav-item"><a class="nav-link" href="{{ route('cart.index') }}">Cart</a></li>
-                @auth
-                    <li class="nav-item"><a class="nav-link" href="{{ route('dashboard') }}">Dashboard</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{{ route('profile.edit') }}">Profile</a></li>
-                @else
-                    <li class="nav-item"><a class="nav-link" href="{{ route('login') }}">Login</a></li>
-                @endauth
+             @auth
+   
+    <li class="nav-item"><a class="nav-link" href="{{ route('profile.edit') }}">Profile</a></li>
+
+    <li class="nav-item"><a class="nav-link" href="{{ route('login') }}">Login</a></li>
+@endauth
             </ul>
         </div>
     </div>

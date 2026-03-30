@@ -75,9 +75,7 @@
                 <a class="hover:underline" href="{{ route('home') }}">Home</a>
                 <a class="hover:underline" href="{{ route('products.index') }}">Products</a>
                 <a class="hover:underline" href="{{ route('cart.index') }}">Cart</a>
-                @auth
-                    <a class="hover:underline" href="{{ route('dashboard') }}">Dashboard</a>
-                @endauth
+               
             </div>
 
             <p class="text-xs text-green-100/70">

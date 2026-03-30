@@ -1,13 +1,9 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 
 @section('content')
-
-
 <div class="container" style="padding:40px;">
-
     <h2>Farm Management Dashboard</h2>
 
-    
     <h3 style="margin-top:30px;">Sales Summary</h3>
 
     <div style="display:flex; gap:20px; margin-top:20px;">
@@ -32,8 +28,6 @@
         </div>
     </div>
 
-
-    <!-- PRODUCT SUMMARY -->
     <h3 style="margin-top:50px;">Product Summary</h3>
 
     <div style="display:flex; gap:20px; margin-top:20px;">
@@ -53,8 +47,6 @@
         </div>
     </div>
 
-
-
     <h3 style="margin-top:50px;">Recent Orders</h3>
 
     <table border="1" cellpadding="10" cellspacing="0" width="100%" style="margin-top:15px; background:white;">
@@ -65,18 +57,16 @@
         </tr>
 
         @forelse($recentOrders as $order)
-        <tr>
-            <td>{{ $order->id }}</td>
-            <td>{{ $order->status }}</td>
-            <td>{{ $order->created_at }}</td>
-        </tr>
+            <tr>
+                <td>{{ $order->id }}</td>
+                <td>{{ $order->status }}</td>
+                <td>{{ $order->created_at }}</td>
+            </tr>
         @empty
-        <tr>
-            <td colspan="3">No orders yet</td>
-        </tr>
+            <tr>
+                <td colspan="3">No orders yet</td>
+            </tr>
         @endforelse
     </table>
-
 </div>
-
 @endsection

@@ -38,7 +38,7 @@ final class AuthenticatedSessionController extends Controller
 
         $this->consumePendingCart();
 
-        return redirect()->intended(route('home'));
+       return redirect(route('home', absolute: false));
     }
 
     public function destroy(Request $request): RedirectResponse
@@ -48,7 +48,8 @@ final class AuthenticatedSessionController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('home');
+        return redirect(route('home', absolute: false));
+        
     }
 
     private function normalizeIntendedUrl(): void

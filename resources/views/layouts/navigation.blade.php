@@ -5,17 +5,25 @@
             <div class="flex">
                 
                 <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboard') }}">
-                        <x-application-logo class="block h-9 w-auto fill-current text-gray-800" />
-                    </a>
+                 <a href="{{ route('home') }}">
+    <x-application-logo class="block h-9 w-auto fill-current text-gray-800" />
+</a>
+    <x-application-logo class="block h-9 w-auto fill-current text-gray-800" />
+</a>
                 </div>
 
                 
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        {{ __('Dashboard') }}
-                    </x-nav-link>
-                </div>
+               <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+    @if(auth()->user()->is_admin)
+        <a href="{{ route('dashboard') }}">Dashboard</a>
+    @endif
+</div>
+{{-- Mobile --}}
+<div class="pt-2 pb-3 space-y-1">
+    @if(auth()->user()->is_admin)
+        <a href="{{ route('dashboard') }}">Dashboard</a>
+    @endif
+</div>
             </div>
 
            

@@ -54,31 +54,20 @@
                     <a class="hover:text-green-800 transition {{ request()->routeIs('products.*') ? 'text-green-800' : '' }}"
                        href="{{ route('products.index') }}">Products</a>
 
-                    <a class="hover:text-green-800 transition {{ request()->routeIs('cart.*') ? 'text-green-800' : '' }}"
-                       href="{{ route('cart.index') }}">
-                        Cart
-                        @if($cartCount > 0)
-                            <span class="ml-2 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-red-600 px-1 text-[11px] font-extrabold text-white">
-                                {{ $cartCount > 99 ? '99+' : $cartCount }}
-                            </span>
-                        @endif
-                    </a>
+                    
 
-                  @auth
-    <a class="hover:text-green-800 transition {{ request()->routeIs('dashboard') ? 'text-green-800' : '' }}"
-       href="{{ route('dashboard') }}">Dashboard</a>
-
-    <a class="hover:text-green-800 transition {{ request()->routeIs('profile.*') ? 'text-green-800' : '' }}"
-       href="{{ route('profile.edit') }}">Profile</a>
-
-    <form method="POST" action="{{ route('logout') }}" class="inline">
+                    @auth
+                    
+                        <a class="hover:text-green-800 transition {{ request()->routeIs('profile.*') ? 'text-green-800' : '' }}"
+                           href="{{ route('profile.edit') }}">Profile</a>
+                              <form method="POST" action="{{ route('logout') }}" class="inline">
         @csrf
         <button type="submit"
                 class="hover:text-red-700 transition font-semibold text-slate-700">
             Logout
         </button>
-    </form>
-@endauth
+                    @endauth
+
                     @guest
                         @if (Route::has('login'))
                             <a class="hover:text-green-800 transition {{ request()->routeIs('login') ? 'text-green-800' : '' }}"
@@ -132,13 +121,31 @@
                         </span>
                     @endif
                 </a>
+@auth
+    <a class="hover:text-green-800 transition {{ request()->routeIs('profile.*') ? 'text-green-800' : '' }}"
+       href="{{ route('profile.edit') }}">Profile</a>
 
-                @auth
-                    <a class="whitespace-nowrap hover:text-green-800 {{ request()->routeIs('dashboard') ? 'text-green-800' : '' }}"
-                       href="{{ route('dashboard') }}">Dashboard</a>
-                    <a class="whitespace-nowrap hover:text-green-800 {{ request()->routeIs('profile.*') ? 'text-green-800' : '' }}"
-                       href="{{ route('profile.edit') }}">Profile</a>
-                @endauth
+    <form method="POST" action="{{ route('logout') }}" class="inline">
+        @csrf
+        <button type="submit" class="hover:text-red-700 transition font-semibold text-slate-700">
+            Logout
+        </button>
+    </form>
+@endauth
+
+           @auth
+    <a class="hover:text-green-800 transition {{ request()->routeIs('profile.*') ? 'text-green-800' : '' }}"
+       href="{{ route('profile.edit') }}">Profile</a>
+
+    <form method="POST" action="{{ route('logout') }}" class="inline">
+        @csrf
+        <button type="submit"
+                class="hover:text-red-700 transition font-semibold text-slate-700">
+            Logout
+        </button>
+    </form>
+@endauth
+
 
                 @guest
                     @if (Route::has('login'))
