@@ -17,44 +17,80 @@ final class CheckoutController extends Controller
     public function index(): View|RedirectResponse
     {
         $cart = $this->cart();
+
         if ($cart === []) {
             return redirect()->route('cart.index')->with('success', 'Your cart is empty.');
         }
 
-        [$items, $total] = $this->hydrateCartItems($cart);
+        [$items, $subtotal] = $this->hydrateCartItems($cart);
+
         if ($items === []) {
             return redirect()->route('cart.index')->with('success', 'Your cart is empty.');
         }
 
+        $deliveryFee = (float) config('checkout.delivery_fee', 0);
+        $etaDays = max(0, (int) config('checkout.delivery_eta_days', 2));
+
+        $defaultMethod = 'delivery';
+        $shipping = $defaultMethod === 'delivery' ? $deliveryFee : 0.0;
+        $total = $subtotal + $shipping;
+
         return view('checkout.index', [
             'items' => $items,
+            'subtotal' => $subtotal,
+            'shipping' => $shipping,
             'total' => $total,
+            'deliveryFee' => $deliveryFee,
+            'etaDays' => $etaDays,
         ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
         $cart = $this->cart();
+
         if ($cart === []) {
             return redirect()->route('cart.index')->with('success', 'Your cart is empty.');
         }
 
-        $data = $request->validate([
-            'customer_name' => ['required', 'string', 'max:120'],
+        $validated = $request->validate([
+            'fulfillment_method' => ['required', 'in:delivery,pickup'],
+
+            'customer_first_name' => ['required', 'string', 'max:60'],
+            'customer_last_name' => ['required', 'string', 'max:60'],
             'customer_email' => ['required', 'email', 'max:190'],
             'customer_phone' => ['nullable', 'string', 'max:40'],
-            'customer_address' => ['nullable', 'string', 'max:255'],
+            'customer_address' => ['nullable', 'string', 'max:255', 'required_if:fulfillment_method,delivery'],
             'notes' => ['nullable', 'string', 'max:500'],
+
+            'payment_method' => ['required', 'in:cash,gcash,bank_transfer'],
+            'payment_reference' => ['nullable', 'string', 'max:80', 'required_unless:payment_method,cash'],
         ]);
+
+        $data = [
+            'fulfillment_method' => $validated['fulfillment_method'],
+            'customer_name' => trim($validated['customer_first_name'] . ' ' . $validated['customer_last_name']),
+            'customer_email' => $validated['customer_email'],
+            'customer_phone' => $validated['customer_phone'] ?? null,
+            'customer_address' => $validated['customer_address'] ?? null,
+            'notes' => $validated['notes'] ?? null,
+            'payment_method' => $validated['payment_method'],
+            'payment_reference' => $validated['payment_reference'] ?? null,
+        ];
 
         try {
             $orderId = DB::transaction(function () use ($cart, $data): int {
-                [$items, $total] = $this->hydrateCartItems($cart, strictStock: true);
+                [$items, $subtotal] = $this->hydrateCartItems($cart, strictStock: true);
+
                 if ($items === []) {
                     throw new RuntimeException('Cart is empty.');
                 }
 
-                $orderId = $this->insertOrderRow($data, $total);
+                $shippingFee = $this->shippingFee($data['fulfillment_method'] ?? 'delivery');
+                $grandTotal = $subtotal + $shippingFee;
+
+                $orderId = $this->insertOrderRow($data, $subtotal, $shippingFee, $grandTotal);
+
                 $this->insertOrderItemsRows($orderId, $items);
                 $this->decrementStock($items);
 
@@ -94,6 +130,15 @@ final class CheckoutController extends Controller
         ]);
     }
 
+    private function shippingFee(string $fulfillmentMethod): float
+    {
+        if ($fulfillmentMethod === 'pickup') {
+            return 0.0;
+        }
+
+        return max(0.0, (float) config('checkout.delivery_fee', 0));
+    }
+
     /** @return array<string,array{name:string,price:mixed,quantity:mixed}> */
     private function cart(): array
     {
@@ -115,6 +160,7 @@ final class CheckoutController extends Controller
             ->keyBy('id');
 
         $productsTable = (new Product())->getTable();
+
         $stockCol = Schema::hasColumn($productsTable, 'stock')
             ? 'stock'
             : (Schema::hasColumn($productsTable, 'quantity') ? 'quantity' : null);
@@ -125,13 +171,13 @@ final class CheckoutController extends Controller
         foreach ($cart as $id => $row) {
             $pid = (int) $id;
             $p = $products->get($pid);
+
             if (!$p) {
                 continue;
             }
 
             $qty = max(1, (int) ($row['quantity'] ?? 1));
             $price = (float) ($row['price'] ?? $p->price ?? 0);
-
             $stock = $stockCol ? (int) ($p->{$stockCol} ?? 0) : 0;
 
             if ($stockCol && $stock > 0) {
@@ -157,7 +203,7 @@ final class CheckoutController extends Controller
         return [$items, $total];
     }
 
-    private function insertOrderRow(array $data, float $total): int
+    private function insertOrderRow(array $data, float $subtotal, float $shippingFee, float $total): int
     {
         if (!Schema::hasTable('orders')) {
             throw new RuntimeException('orders table is missing. Run migrations.');
@@ -171,7 +217,15 @@ final class CheckoutController extends Controller
         }
 
         if (Schema::hasColumn('orders', 'status')) {
-            $payload['status'] = 'pending';
+            $payload['status'] = 'Pending';
+        }
+
+        if (Schema::hasColumn('orders', 'subtotal_amount')) {
+            $payload['subtotal_amount'] = $subtotal;
+        }
+
+        if (Schema::hasColumn('orders', 'shipping_fee')) {
+            $payload['shipping_fee'] = $shippingFee;
         }
 
         if (Schema::hasColumn('orders', 'total')) {
@@ -188,6 +242,9 @@ final class CheckoutController extends Controller
             'customer_phone' => 'customer_phone',
             'customer_address' => 'customer_address',
             'notes' => 'notes',
+            'fulfillment_method' => 'fulfillment_method',
+            'payment_method' => 'payment_method',
+            'payment_reference' => 'payment_reference',
         ] as $key => $col) {
             if (Schema::hasColumn('orders', $col)) {
                 $payload[$col] = $data[$key] ?? null;
@@ -197,6 +254,7 @@ final class CheckoutController extends Controller
         if (Schema::hasColumn('orders', 'created_at')) {
             $payload['created_at'] = $now;
         }
+
         if (Schema::hasColumn('orders', 'updated_at')) {
             $payload['updated_at'] = $now;
         }
@@ -219,24 +277,25 @@ final class CheckoutController extends Controller
             if (Schema::hasColumn('order_items', 'order_id')) {
                 $row['order_id'] = $orderId;
             }
+
             if (Schema::hasColumn('order_items', 'product_id')) {
                 $row['product_id'] = $it['id'];
             }
+
             if (Schema::hasColumn('order_items', 'quantity')) {
                 $row['quantity'] = $it['quantity'];
             }
+
             if (Schema::hasColumn('order_items', 'price')) {
                 $row['price'] = $it['price'];
             } elseif (Schema::hasColumn('order_items', 'unit_price')) {
                 $row['unit_price'] = $it['price'];
             }
-            if (Schema::hasColumn('order_items', 'subtotal')) {
-                $row['subtotal'] = $it['subtotal'];
-            }
 
             if (Schema::hasColumn('order_items', 'created_at')) {
                 $row['created_at'] = $now;
             }
+
             if (Schema::hasColumn('order_items', 'updated_at')) {
                 $row['updated_at'] = $now;
             }
@@ -249,20 +308,17 @@ final class CheckoutController extends Controller
     private function decrementStock(array $items): void
     {
         $productsTable = (new Product())->getTable();
+
         $stockCol = Schema::hasColumn($productsTable, 'stock')
             ? 'stock'
             : (Schema::hasColumn($productsTable, 'quantity') ? 'quantity' : null);
 
-        if ($stockCol === null) {
+        if (!$stockCol) {
             return;
         }
 
         foreach ($items as $it) {
-            Product::query()
-                ->whereKey($it['id'])
-                ->where($stockCol, '>=', $it['quantity'])
-                ->decrement($stockCol, $it['quantity']);
+            Product::query()->where('id', $it['id'])->decrement($stockCol, $it['quantity']);
         }
     }
 }
-

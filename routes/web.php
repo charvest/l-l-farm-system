@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminAuthController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\DashboardController;
@@ -10,8 +11,6 @@ use App\Http\Middleware\RequireLoginForCartAction;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Support\Facades\Route;
-
-use App\Http\Controllers\Admin\AdminAuthController;
 
 Route::get('/oauth/{provider}/redirect', [SocialAuthController::class, 'redirect'])
     ->whereIn('provider', ['google', 'facebook'])
@@ -101,10 +100,13 @@ Route::middleware('auth')->group(function () {
     Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
     Route::get('/checkout/success/{order}', [CheckoutController::class, 'success'])->name('checkout.success');
 
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    // NEW: dashboard-like profile page
+    Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
+
+    // keep Breeze settings/forms
+    Route::get('/profile/settings', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
 require __DIR__ . '/auth.php';
-
