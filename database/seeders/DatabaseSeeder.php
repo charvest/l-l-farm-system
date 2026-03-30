@@ -2,201 +2,166 @@
 
 namespace Database\Seeders;
 
-use App\Models\Category;
 use Illuminate\Database\Seeder;
 
-class CategorySeeder extends Seeder
+final class DatabaseSeeder extends Seeder
 {
-    public function run(): void
-    {
-        foreach (['Pig', 'Chicken', 'Produce'] as $name) {
-            Category::query()->updateOrCreate(['name' => $name], []);
-        }
-    }
-}
-
- 
-namespace Database\Seeders;
-
-use App\Models\Category;
-use App\Models\Product;
-use Illuminate\Database\Seeder;
-
-class ProductSeeder extends Seeder
-{
-    public function run(): void
-    {
-        $categoryIds = Category::query()
-            ->whereIn('name', ['Pig', 'Chicken', 'Produce'])
-            ->pluck('id', 'name');
-
-        $products = [
-            // Pigs
-            [
-                'category' => 'Pig',
-                'name' => 'Piglet (8 weeks)',
-                'type' => 'Piglet',
-                'price' => '2500.00',
-                'stock' => 12,
-                'health' => 'Vaccinated',
-                'size' => 'Small',
-                'gender' => 'Mixed',
-                'status' => 'Available',
-                'availability_date' => now()->toDateString(),
-                'description' => 'Healthy piglets, ready for reservation.',
-            ],
-            [
-                'category' => 'Pig',
-                'name' => 'Grower Pig (30–40kg)',
-                'type' => 'Live pig',
-                'price' => '8500.00',
-                'stock' => 6,
-                'health' => 'Healthy',
-                'size' => 'Medium',
-                'gender' => 'Male',
-                'status' => 'Available',
-                'availability_date' => now()->addDays(3)->toDateString(),
-                'description' => 'Great for backyard raising or small farms.',
-            ],
-            [
-                'category' => 'Pig',
-                'name' => 'Sow (Breeding Ready)',
-                'type' => 'Live pig',
-                'price' => '18500.00',
-                'stock' => 2,
-                'health' => 'Healthy',
-                'size' => 'Large',
-                'gender' => 'Female',
-                'status' => 'Available',
-                'availability_date' => now()->addDays(7)->toDateString(),
-                'description' => 'Breeding sow with good temperament.',
-            ],
-
-            // Chickens
-            [
-                'category' => 'Chicken',
-                'name' => 'Native Chicken (Live)',
-                'type' => 'Live chicken',
-                'price' => '350.00',
-                'stock' => 40,
-                'health' => 'Healthy',
-                'size' => 'Medium',
-                'gender' => 'Mixed',
-                'status' => 'Available',
-                'availability_date' => now()->toDateString(),
-                'description' => 'Farm-raised native chickens.',
-            ],
-            [
-                'category' => 'Chicken',
-                'name' => 'Broiler Chicken (Ready for Meat)',
-                'type' => 'Broiler',
-                'price' => '220.00',
-                'stock' => 55,
-                'health' => 'Healthy',
-                'size' => 'Medium',
-                'gender' => 'Mixed',
-                'status' => 'Available',
-                'availability_date' => now()->addDays(2)->toDateString(),
-                'description' => 'Meat-type broilers, good weight and quality.',
-            ],
-            [
-                'category' => 'Chicken',
-                'name' => 'Egg-Laying Hen',
-                'type' => 'Layer',
-                'price' => '480.00',
-                'stock' => 18,
-                'health' => 'Vaccinated',
-                'size' => 'Medium',
-                'gender' => 'Female',
-                'status' => 'Available',
-                'availability_date' => now()->addDays(1)->toDateString(),
-                'description' => 'Laying hens, productive and farm-raised.',
-            ],
-
-            // Produce
-            [
-                'category' => 'Produce',
-                'name' => 'Fresh Eggplant (1kg)',
-                'type' => 'Vegetable',
-                'price' => '70.00',
-                'stock' => 25,
-                'health' => null,
-                'size' => null,
-                'gender' => null,
-                'status' => 'Available',
-                'availability_date' => now()->toDateString(),
-                'description' => 'Freshly harvested eggplant.',
-            ],
-            [
-                'category' => 'Produce',
-                'name' => 'Bananas (1 dozen)',
-                'type' => 'Fruit',
-                'price' => '60.00',
-                'stock' => 30,
-                'health' => null,
-                'size' => null,
-                'gender' => null,
-                'status' => 'Available',
-                'availability_date' => now()->toDateString(),
-                'description' => 'Sweet bananas from our farm.',
-            ],
-            [
-                'category' => 'Produce',
-                'name' => 'Tomatoes (1kg)',
-                'type' => 'Vegetable',
-                'price' => '85.00',
-                'stock' => 20,
-                'health' => null,
-                'size' => null,
-                'gender' => null,
-                'status' => 'Available',
-                'availability_date' => now()->toDateString(),
-                'description' => 'Juicy red tomatoes, great for cooking.',
-            ],
-        ];
-
-        foreach ($products as $p) {
-            $categoryName = $p['category'];
-            $categoryId = $categoryIds[$categoryName] ?? null;
-
-            if (!$categoryId) {
-                continue;
-            }
-
-            unset($p['category']);
-
-            Product::query()->updateOrCreate(
-                ['name' => $p['name'], 'category_id' => $categoryId],
-                ['category_id' => $categoryId] + $p
-            );
-        }
-    }
-}
-
-
-// File: database/seeders/DatabaseSeeder.php
- 
-
-namespace Database\Seeders;
-
-use App\Models\User;
-use Illuminate\Database\Seeder;
-
-class DatabaseSeeder extends Seeder
-{
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
         $this->call([
-            CategorySeeder::class,
-            ProductSeeder::class,
+            CatalogSeeder::class,
         ]);
+    }
+}
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-        ]);
+
+
+namespace Database\Seeders;
+
+use App\Models\Product;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
+
+final class CatalogSeeder extends Seeder
+{
+    public function run(): void
+    {
+        Model::unguard();
+
+        try {
+            $productsTable = (new Product())->getTable();
+
+            if (!Schema::hasTable($productsTable)) {
+                return;
+            }
+
+            $hasProductCol = fn (string $col): bool => Schema::hasColumn($productsTable, $col);
+
+            $nameCol = $hasProductCol('name') ? 'name' : null;
+            $priceCol = $hasProductCol('price') ? 'price' : null;
+
+            if ($nameCol === null || $priceCol === null) {
+                return;
+            }
+
+            $typeCol = $hasProductCol('type')
+                ? 'type'
+                : ($hasProductCol('category') ? 'category' : null);
+
+            $stockCol = $hasProductCol('stock')
+                ? 'stock'
+                : ($hasProductCol('quantity') ? 'quantity' : null);
+
+            $imageCol = $hasProductCol('image') ? 'image' : null;
+            $categoryIdCol = $hasProductCol('category_id') ? 'category_id' : null;
+
+            $categoryIds = $this->seedCategoriesIfPossible($categoryIdCol);
+
+            $pickImage = function (array $candidates): ?string {
+                foreach ($candidates as $file) {
+                    if (is_file(public_path('images/placeholders/' . $file))) {
+                        return $file;
+                    }
+                }
+                return null;
+            };
+
+            $items = [
+                // Livestock
+                ['name' => 'Piglet (8 weeks)',        'type' => 'Piglet',       'price' => 2500,  'stock' => 12, 'cat' => 'Pigs',     'img' => ['8weekspig.jpg','8weekspig.jpeg']],
+                ['name' => 'Grower Pig (30-40kg)',    'type' => 'Live pig',     'price' => 8500,  'stock' => 6,  'cat' => 'Pigs',     'img' => ['30kgpig.jpg','30kgpig.jpeg']],
+                ['name' => 'Sow (Breeding Ready)',    'type' => 'Live pig',     'price' => 18500, 'stock' => 2,  'cat' => 'Pigs',     'img' => ['pig.jpg','pig.jpeg']],
+
+                // Poultry
+                ['name' => 'Native Chicken (Live)',   'type' => 'Live chicken', 'price' => 350,   'stock' => 40, 'cat' => 'Chickens', 'img' => ['chicken.jpg','chicken.jpeg']],
+                ['name' => 'Egg-Laying Hen',          'type' => 'Layer',        'price' => 480,   'stock' => 18, 'cat' => 'Chickens', 'img' => ['eggs.jpg','eggs.jpeg']],
+                ['name' => 'Fresh Eggs (1 dozen)',    'type' => 'Egg',          'price' => 120,   'stock' => 25, 'cat' => 'Chickens', 'img' => ['eggs.jpg','eggs.jpeg']],
+
+                // Vegetables
+                ['name' => 'Fresh Eggplant (1kg)',    'type' => 'Vegetable',    'price' => 70,    'stock' => 25, 'cat' => 'Produce',  'img' => ['eggplant.jpeg','eggplant.jpg']],
+                ['name' => 'Tomatoes (1kg)',          'type' => 'Vegetable',    'price' => 85,    'stock' => 20, 'cat' => 'Produce',  'img' => ['tomato.jpg','tomato.jpeg']],
+                ['name' => 'Lettuce (1kg)',           'type' => 'Vegetable',    'price' => 90,    'stock' => 25, 'cat' => 'Produce',  'img' => ['lettuce.jpg','lettuce.jpeg']],
+                ['name' => 'Potato (1kg)',            'type' => 'Vegetable',    'price' => 85,    'stock' => 25, 'cat' => 'Produce',  'img' => ['potato.jpg','potato.jpeg']],
+                ['name' => 'Carrots (1kg)',           'type' => 'Vegetable',    'price' => 70,    'stock' => 25, 'cat' => 'Produce',  'img' => ['carrots.jpg','carrots.jpeg']],
+                ['name' => 'Cabbage (1pc)',           'type' => 'Vegetable',    'price' => 60,    'stock' => 20, 'cat' => 'Produce',  'img' => ['cabbage.jpg','cabbage.jpeg']],
+
+                // Fruits
+                ['name' => 'Bananas (1 dozen)',       'type' => 'Fruit',        'price' => 60,    'stock' => 30, 'cat' => 'Produce',  'img' => ['banana.jpeg','banana.jpg']],
+                ['name' => 'Watermelon (1pc)',        'type' => 'Fruit',        'price' => 180,   'stock' => 15, 'cat' => 'Produce',  'img' => ['watermelon.jpeg','watermelon.jpg']],
+                ['name' => 'Avocado (1kg)',           'type' => 'Fruit',        'price' => 220,   'stock' => 12, 'cat' => 'Produce',  'img' => ['avocado.jpeg','avocado.jpg']],
+                ['name' => 'Orange (1kg)',            'type' => 'Fruit',        'price' => 140,   'stock' => 20, 'cat' => 'Produce',  'img' => ['orange.jpeg','orange.jpg']],
+                ['name' => 'Mango (1kg)',             'type' => 'Fruit',        'price' => 160,   'stock' => 18, 'cat' => 'Produce',  'img' => ['mango.jpeg','mango.jpg']],
+            ];
+
+            foreach ($items as $i) {
+                $update = [
+                    $priceCol => $i['price'],
+                ];
+
+                if ($typeCol !== null) {
+                    $update[$typeCol] = $i['type'];
+                }
+
+                if ($stockCol !== null) {
+                    $update[$stockCol] = $i['stock'];
+                }
+
+                if ($imageCol !== null) {
+                    $img = $pickImage($i['img']);
+                    if ($img !== null) {
+                        $update[$imageCol] = $img;
+                    }
+                }
+
+                if ($categoryIdCol !== null && isset($categoryIds[$i['cat']])) {
+                    $update[$categoryIdCol] = $categoryIds[$i['cat']];
+                }
+
+                Product::query()->updateOrCreate(
+                    [$nameCol => $i['name']],
+                    $update
+                );
+            }
+        } finally {
+            Model::reguard();
+        }
+    }
+
+    private function seedCategoriesIfPossible(?string $categoryIdCol): array
+    {
+        if ($categoryIdCol === null) {
+            return [];
+        }
+
+        $table = 'categories';
+        if (!Schema::hasTable($table) || !Schema::hasColumn($table, 'id') || !Schema::hasColumn($table, 'name')) {
+            return [];
+        }
+
+        $hasCreated = Schema::hasColumn($table, 'created_at');
+        $hasUpdated = Schema::hasColumn($table, 'updated_at');
+        $now = now();
+
+        foreach (['Pigs', 'Chickens', 'Produce'] as $name) {
+            $values = [];
+            if ($hasCreated) {
+                $values['created_at'] = $now;
+            }
+            if ($hasUpdated) {
+                $values['updated_at'] = $now;
+            }
+
+            DB::table($table)->updateOrInsert(['name' => $name], $values);
+        }
+
+        /** @var array<string,int> $map */
+        $map = DB::table($table)
+            ->whereIn('name', ['Pigs', 'Chickens', 'Produce'])
+            ->pluck('id', 'name')
+            ->all();
+
+        return $map;
     }
 }

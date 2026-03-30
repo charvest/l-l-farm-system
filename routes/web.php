@@ -7,6 +7,55 @@ use App\Http\Controllers\ProfileController;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Support\Facades\Route;
+ 
+use App\Http\Controllers\CheckoutController;
+ 
+use App\Http\Controllers\SocialAuthController;
+
+Route::get('/oauth/{provider}/redirect', [SocialAuthController::class, 'redirect'])
+    ->whereIn('provider', ['google', 'facebook'])
+    ->name('oauth.redirect');
+
+Route::get('/oauth/{provider}/callback', [SocialAuthController::class, 'callback'])
+    ->whereIn('provider', ['google', 'facebook'])
+    ->name('oauth.callback');
+
+// Cart viewing can be auth-only (your choice). If you want guest cart page, remove middleware('auth') here.
+Route::get('/cart', [CartController::class, 'index'])->middleware('auth')->name('cart.index');
+
+Route::post('/cart/add/{product}', [CartController::class, 'add'])
+    ->middleware(RequireLoginForCartAction::class)
+    ->name('cart.add');
+
+Route::post('/cart/update/{product}', [CartController::class, 'update'])
+    ->middleware(RequireLoginForCartAction::class)
+    ->name('cart.update');
+
+Route::post('/cart/remove/{product}', [CartController::class, 'remove'])
+    ->middleware(RequireLoginForCartAction::class)
+    ->name('cart.remove');
+
+Route::post('/cart/clear', [CartController::class, 'clear'])
+    ->middleware(RequireLoginForCartAction::class)
+    ->name('cart.clear');
+
+// Checkout must be logged in
+Route::middleware('auth')->group(function () {
+    Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
+    Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
+    Route::get('/checkout/success/{order}', [CheckoutController::class, 'success'])->name('checkout.success');
+});
+
+// Social login (Google/Facebook)
+Route::get('/oauth/{provider}/redirect', [SocialAuthController::class, 'redirect'])
+    ->whereIn('provider', ['google', 'facebook'])
+    ->name('oauth.redirect');
+
+Route::get('/oauth/{provider}/callback', [SocialAuthController::class, 'callback'])
+    ->whereIn('provider', ['google', 'facebook'])
+    ->name('oauth.callback');
+
+
 
 Route::get('/', function () {
     // Base featured query (exclude broiler)

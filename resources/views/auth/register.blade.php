@@ -127,22 +127,23 @@ File: resources/views/auth/register.blade.php
 
                     {{-- Social placeholders (UI only) --}}
                     <div class="grid grid-cols-2 gap-3">
-                        <button
-                            type="button"
-                            class="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-800 hover:bg-gray-50 transition"
-                            aria-label="Sign up with Google (placeholder)"
-                        >
-                            <span class="text-base">G</span> Google
-                        </button>
+                      {{-- GOOGLE --}}
+        <a
+            href="{{ route('oauth.redirect', ['provider' => 'google']) }}"
+            class="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-extrabold text-gray-800 shadow-sm hover:bg-gray-50 transition"
+        >
+            <span class="font-extrabold">G</span>
+            <span>Google</span>
+        </a>
 
-                        <button
-                            type="button"
-                            class="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-800 hover:bg-gray-50 transition"
-                            aria-label="Sign up with Facebook (placeholder)"
-                        >
-                            <span class="text-base">f</span> Facebook
-                        </button>
-                    </div>
+        {{-- FACEBOOK --}}
+        <a
+            href="{{ route('oauth.redirect', ['provider' => 'facebook']) }}"
+            class="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-extrabold text-gray-800 shadow-sm hover:bg-gray-50 transition"
+        >
+            <span class="font-extrabold">f</span>
+            <span>Facebook</span>
+        </a>
 
                     <p class="pt-2 text-center text-sm text-gray-600">
                         Already have an account?

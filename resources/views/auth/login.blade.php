@@ -110,30 +110,33 @@
                     </button>
 
                     {{-- Separator --}}
-                    <div class="flex items-center gap-4 py-2">
-                        <div class="h-px flex-1 bg-gray-200"></div>
-                        <div class="text-xs text-gray-400">Or Login With</div>
-                        <div class="h-px flex-1 bg-gray-200"></div>
-                    </div>
+                   <div class="mt-6">
+    <div class="flex items-center gap-3">
+        <div class="h-px flex-1 bg-gray-200"></div>
+        <div class="text-xs font-semibold text-gray-500">Or Login With</div>
+        <div class="h-px flex-1 bg-gray-200"></div>
+    </div>
 
-                    {{-- Social placeholders (UI only) --}}
-                    <div class="grid grid-cols-2 gap-3">
-                        <button
-                            type="button"
-                            class="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-800 hover:bg-gray-50 transition"
-                            aria-label="Login with Google (placeholder)"
-                        >
-                            <span class="text-base">G</span> Google
-                        </button>
+    <div class="mt-4 grid grid-cols-2 gap-3">
+        {{-- GOOGLE --}}
+        <a
+            href="{{ route('oauth.redirect', ['provider' => 'google']) }}"
+            class="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-extrabold text-gray-800 shadow-sm hover:bg-gray-50 transition"
+        >
+            <span class="font-extrabold">G</span>
+            <span>Google</span>
+        </a>
 
-                        <button
-                            type="button"
-                            class="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-semibold text-gray-800 hover:bg-gray-50 transition"
-                            aria-label="Login with Facebook (placeholder)"
-                        >
-                            <span class="text-base">f</span> Facebook
-                        </button>
-                    </div>
+        {{-- FACEBOOK --}}
+        <a
+            href="{{ route('oauth.redirect', ['provider' => 'facebook']) }}"
+            class="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm font-extrabold text-gray-800 shadow-sm hover:bg-gray-50 transition"
+        >
+            <span class="font-extrabold">f</span>
+            <span>Facebook</span>
+        </a>
+    </div>
+</div>
 
                     <p class="pt-2 text-center text-sm text-gray-600">
                         Don’t have an account?

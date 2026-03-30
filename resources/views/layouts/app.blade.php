@@ -1,6 +1,3 @@
-{{-- =============================================================================
-File: resources/views/layouts/app.blade.php
-============================================================================= --}}
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="scroll-smooth">
 <head>
@@ -14,7 +11,28 @@ File: resources/views/layouts/app.blade.php
 </head>
 
 <body class="min-h-screen bg-green-50 text-gray-900">
+@php
+    /** Cart badge total qty (session cart) */
+    $cartCount = 0;
+    foreach ((array) session('cart', []) as $row) {
+        $cartCount += max(0, (int) ($row['quantity'] ?? 0));
+    }
+@endphp
+
 <div id="top"></div>
+
+{{-- Toast (uses Alpine if available; if Alpine isn't loaded it will just display normally) --}}
+@if(session('success'))
+    <div
+        x-data="{ show: true }"
+        x-init="setTimeout(() => show = false, 2200)"
+        x-show="show"
+        x-transition.opacity.duration.300ms
+        class="fixed right-4 top-4 z-50 rounded-xl bg-green-700 px-4 py-3 text-sm font-extrabold text-white shadow-lg"
+    >
+        {{ session('success') }}
+    </div>
+@endif
 
 <div class="min-h-screen flex flex-col">
     {{-- Herbruck's-inspired header: thin accent + clean white nav --}}
@@ -37,16 +55,30 @@ File: resources/views/layouts/app.blade.php
                        href="{{ route('products.index') }}">Products</a>
 
                     <a class="hover:text-green-800 transition {{ request()->routeIs('cart.*') ? 'text-green-800' : '' }}"
-                       href="{{ route('cart.index') }}">Cart</a>
+                       href="{{ route('cart.index') }}">
+                        Cart
+                        @if($cartCount > 0)
+                            <span class="ml-2 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-red-600 px-1 text-[11px] font-extrabold text-white">
+                                {{ $cartCount > 99 ? '99+' : $cartCount }}
+                            </span>
+                        @endif
+                    </a>
 
-                    @auth
-                        <a class="hover:text-green-800 transition {{ request()->routeIs('dashboard') ? 'text-green-800' : '' }}"
-                           href="{{ route('dashboard') }}">Dashboard</a>
+                  @auth
+    <a class="hover:text-green-800 transition {{ request()->routeIs('dashboard') ? 'text-green-800' : '' }}"
+       href="{{ route('dashboard') }}">Dashboard</a>
 
-                        <a class="hover:text-green-800 transition {{ request()->routeIs('profile.*') ? 'text-green-800' : '' }}"
-                           href="{{ route('profile.edit') }}">Profile</a>
-                    @endauth
+    <a class="hover:text-green-800 transition {{ request()->routeIs('profile.*') ? 'text-green-800' : '' }}"
+       href="{{ route('profile.edit') }}">Profile</a>
 
+    <form method="POST" action="{{ route('logout') }}" class="inline">
+        @csrf
+        <button type="submit"
+                class="hover:text-red-700 transition font-semibold text-slate-700">
+            Logout
+        </button>
+    </form>
+@endauth
                     @guest
                         @if (Route::has('login'))
                             <a class="hover:text-green-800 transition {{ request()->routeIs('login') ? 'text-green-800' : '' }}"
@@ -67,7 +99,7 @@ File: resources/views/layouts/app.blade.php
                     </a>
 
                     <a href="{{ route('cart.index') }}"
-                       class="inline-flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-slate-700 hover:bg-gray-50 transition"
+                       class="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-gray-200 bg-white text-slate-700 hover:bg-gray-50 transition"
                        aria-label="Cart">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <path d="M6 6h15l-1.5 9h-12z"/>
@@ -75,6 +107,12 @@ File: resources/views/layouts/app.blade.php
                             <circle cx="9" cy="20" r="1"/>
                             <circle cx="18" cy="20" r="1"/>
                         </svg>
+
+                        @if($cartCount > 0)
+                            <span class="absolute -top-1 -right-1 grid h-5 min-w-[1.25rem] place-items-center rounded-full bg-red-600 px-1 text-[11px] font-extrabold text-white">
+                                {{ $cartCount > 99 ? '99+' : $cartCount }}
+                            </span>
+                        @endif
                     </a>
                 </div>
             </div>
@@ -86,7 +124,14 @@ File: resources/views/layouts/app.blade.php
                 <a class="whitespace-nowrap hover:text-green-800 {{ request()->routeIs('products.*') ? 'text-green-800' : '' }}"
                    href="{{ route('products.index') }}">Products</a>
                 <a class="whitespace-nowrap hover:text-green-800 {{ request()->routeIs('cart.*') ? 'text-green-800' : '' }}"
-                   href="{{ route('cart.index') }}">Cart</a>
+                   href="{{ route('cart.index') }}">
+                    Cart
+                    @if($cartCount > 0)
+                        <span class="ml-2 inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-red-600 px-1 text-[11px] font-extrabold text-white">
+                            {{ $cartCount > 99 ? '99+' : $cartCount }}
+                        </span>
+                    @endif
+                </a>
 
                 @auth
                     <a class="whitespace-nowrap hover:text-green-800 {{ request()->routeIs('dashboard') ? 'text-green-800' : '' }}"

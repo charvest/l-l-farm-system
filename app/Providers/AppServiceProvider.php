@@ -2,23 +2,28 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
-class AppServiceProvider extends ServiceProvider
+final class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
     public function register(): void
     {
         //
     }
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
-        //
+        View::composer('*', function ($view): void {
+            /** @var array<string,array{quantity?:mixed}> $cart */
+            $cart = session()->get('cart', []);
+            $count = 0;
+
+            foreach ($cart as $row) {
+                $count += max(0, (int) ($row['quantity'] ?? 0));
+            }
+
+            $view->with('cartCount', $count);
+        });
     }
 }

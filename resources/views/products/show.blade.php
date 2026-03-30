@@ -2,32 +2,16 @@
 
 @section('content')
 @php
-    $publicBase = rtrim(request()->getBaseUrl(), '/');
-    $img = fn (string $file) => $publicBase . '/images/' . ltrim($file, '/');
+    $img = \App\Support\ProductImages::urlFor($product);
+    $fallback = asset('images/placeholders/pig.jpg');
 
-    $placeholderFor = function ($p) use ($img): string {
-        $t = strtolower(trim(($p->name ?? '').' '.($p->type ?? '').' '.($p->description ?? '')));
-        return match (true) {
-            str_contains($t, 'eggplant') => $img('placeholders/eggplant.jpg'),
-            str_contains($t, 'tomato') => $img('placeholders/tomato.jpg'),
-            str_contains($t, 'cabbage') => $img('placeholders/cabbage.jpg'),
-            str_contains($t, 'lettuce') => $img('placeholders/lettuce.jpg'),
-            str_contains($t, 'potato') => $img('placeholders/potato.jpg'),
-            str_contains($t, 'carrot') => $img('placeholders/carrots.jpg'),
-            str_contains($t, 'egg') => $img('placeholders/eggs.jpg'),
-            str_contains($t, 'chicken') => $img('placeholders/chicken.jpg'),
-            str_contains($t, 'pig') => $img('placeholders/pig.jpg'),
-            default => $img('placeholders/lettuce.jpg'),
-        };
-    };
-
-    $idJpg  = $img('products/'.$product->id.'.jpg');
-    $idJpeg = $img('products/'.$product->id.'.jpeg');
-    $fallback = $placeholderFor($product);
-
-    $stock = (int)($product->stock ?? 0);
+    $stock = (int) ($product->stock ?? $product->quantity ?? 0);
     $inStock = $stock > 0;
-    $maxQty = max(1, $stock);
+
+    $maxQty = $inStock ? $stock : 1;
+    $maxLabel = $stock;
+
+    $pricePhp = \App\Support\Money::php($product->price);
 @endphp
 
 <div class="mx-auto max-w-6xl px-4 py-8">
@@ -53,16 +37,11 @@
         <div class="rounded-2xl bg-white p-4 shadow-sm ring-1 ring-black/5">
             <div class="aspect-[4/3] overflow-hidden rounded-xl bg-gray-50">
                 <img
-                    src="{{ $idJpg }}"
-                    data-alt="{{ $idJpeg }}"
-                    data-fallback="{{ $fallback }}"
+                    src="{{ $img }}"
                     alt="{{ $product->name }}"
                     loading="lazy"
                     class="h-full w-full object-cover"
-                    onerror="
-                        if(this.dataset.triedAlt!=='1'){this.dataset.triedAlt='1'; this.src=this.dataset.alt; return;}
-                        this.src=this.dataset.fallback;
-                    "
+                    onerror="this.src='{{ $fallback }}';"
                 />
             </div>
         </div>
@@ -72,9 +51,10 @@
                 <div>
                     <div class="text-sm font-semibold text-gray-500">Price</div>
                     <div class="mt-1 text-3xl font-extrabold text-green-800">
-                        ₱{{ number_format((float)($product->price ?? 0), 2) }}
+                        {{ $pricePhp }}
                     </div>
                 </div>
+
                 <div class="text-right">
                     <div class="text-sm font-semibold text-gray-500">Stock</div>
                     <div class="mt-1 text-lg font-extrabold {{ $inStock ? 'text-green-800' : 'text-red-600' }}">
@@ -105,7 +85,7 @@
                         {{ $inStock ? '' : 'disabled' }}
                         class="w-28 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 font-bold text-gray-900 focus:border-green-600 focus:ring-green-600"
                     />
-                    <span class="text-xs text-gray-500">Max: {{ $maxQty }}</span>
+                    <span class="text-xs text-gray-500">Max: {{ $maxLabel }}</span>
                 </div>
 
                 <button

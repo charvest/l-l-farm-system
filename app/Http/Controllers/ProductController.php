@@ -6,28 +6,54 @@ use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
-class ProductController extends Controller
+final class ProductController extends Controller
 {
     public function index(Request $request): View
     {
-        $query = Product::query()->with('category')->latest();
+        $q = trim((string) $request->query('q', ''));
+        $type = trim((string) $request->query('type', ''));
+        $sort = trim((string) $request->query('sort', 'newest'));
 
-        $category = trim((string) $request->query('category', ''));
-        if ($category !== '') {
-            $query->whereHas('category', function ($q) use ($category) {
-                $q->where('name', 'like', '%' . $category . '%');
+        $productsQuery = Product::query();
+
+        if ($q !== '') {
+            $productsQuery->where(function ($qq) use ($q) {
+                $qq->where('name', 'like', "%{$q}%")
+                    ->orWhere('type', 'like', "%{$q}%");
             });
         }
 
-        $products = $query->get();
+        if ($type !== '') {
+            $productsQuery->where('type', $type);
+        }
 
-        return view('products.index', compact('products'));
+        match ($sort) {
+            'price_asc'  => $productsQuery->orderBy('price', 'asc'),
+            'price_desc' => $productsQuery->orderBy('price', 'desc'),
+            'name_asc'   => $productsQuery->orderBy('name', 'asc'),
+            'name_desc'  => $productsQuery->orderBy('name', 'desc'),
+            default      => $productsQuery->latest(),
+        };
+
+        $products = $productsQuery->paginate(24)->withQueryString();
+
+        $types = Product::query()
+            ->select('type')
+            ->whereNotNull('type')
+            ->where('type', '!=', '')
+            ->distinct()
+            ->orderBy('type')
+            ->pluck('type');
+
+        return view('products.index', [
+            'products' => $products,
+            'types' => $types,
+            'filters' => compact('q', 'type', 'sort'),
+        ]);
     }
 
     public function show(Product $product): View
     {
-        $product->load('category');
-
         return view('products.show', compact('product'));
     }
 }
